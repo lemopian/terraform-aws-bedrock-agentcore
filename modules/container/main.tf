@@ -23,6 +23,10 @@ resource "aws_bedrockagentcore_agent_runtime" "this" {
     var.environment_variables,
     {
       AWS_REGION = var.region,
+      # CONTAINER_HASH forces new agent version creation when code/image changes.
+      # AgentCore only creates new versions when configuration changes, so we inject
+      # a hash of all source files as an env var to trigger version updates on code changes.
+      CONTAINER_HASH = local.container_hash,
     },
     var.enable_memory ? {
       ENABLE_MEMORY       = "true",

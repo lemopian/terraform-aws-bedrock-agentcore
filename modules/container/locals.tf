@@ -36,4 +36,9 @@ locals {
 
   tags = merge(local.default_tags, var.tags)
 
+  # Compute hash of container source files to detect changes
+  container_hash = sha1(join("", [
+    for f in fileset(var.container_source_path, "**") : filesha1("${var.container_source_path}/${f}")
+  ]))
+
 }

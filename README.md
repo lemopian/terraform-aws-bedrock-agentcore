@@ -173,6 +173,34 @@ module "agentcore_runtime" {
 }
 ```
 
+## Automatic Version Management
+
+### Why Hash Environment Variables?
+
+Both modules automatically inject a hash value as an environment variable (`CONTAINER_HASH` for containers, `DEPLOYMENT_HASH` for ZIP deployments). This is a critical pattern for ensuring proper version management.
+
+**The Problem:**
+
+AWS Bedrock AgentCore only creates a new agent version when the agent runtime configuration changes. Simply updating your code or Docker image doesn't change the Terraform configuration, so AgentCore continues using the old cached version.
+
+**The Solution:**
+
+By injecting a hash of your source code as an environment variable:
+
+- **Container Module**: `CONTAINER_HASH` = SHA1 hash of all files in `container_source_path`
+- **ZIP Module**: `DEPLOYMENT_HASH` = SHA256 hash of code + dependencies (pyproject.toml)
+
+When your code changes, the hash changes, which changes the environment variables, which Terraform detects as a configuration change, triggering AgentCore to create and deploy a new version automatically.
+
+**Benefits:**
+
+- ✅ No manual version bumping required
+- ✅ Guaranteed fresh deployments after code changes
+- ✅ Traceable deployments (hash visible in console/logs)
+- ✅ Works seamlessly with CI/CD pipelines
+
+**Note:** These hash values are safe to expose as environment variables since they're just checksums of your code, not sensitive data.
+
 ## Examples
 
 See the `examples/` directory for complete working examples:

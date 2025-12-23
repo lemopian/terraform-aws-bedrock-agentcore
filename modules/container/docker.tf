@@ -20,9 +20,7 @@ resource "docker_image" "this" {
 
   # Force rebuild when source files change
   triggers = {
-    dir_sha1 = sha1(join("", [
-      for f in fileset(var.container_source_path, "**") : filesha1("${var.container_source_path}/${f}")
-    ]))
+    dir_sha1 = local.container_hash
   }
 }
 

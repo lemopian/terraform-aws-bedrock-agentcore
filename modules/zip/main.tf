@@ -27,8 +27,11 @@ resource "aws_bedrockagentcore_agent_runtime" "this" {
   environment_variables = merge(
     var.environment_variables,
     {
-      DEPLOYMENT_HASH = aws_s3_object.deployment_package.source_hash,
-      AWS_REGION      = var.region,
+      AWS_REGION = var.region,
+      # DEPLOYMENT_HASH forces new agent version creation when code changes.
+      # AgentCore only creates new versions when configuration changes, so we inject
+      # a hash of the deployment package as an env var to trigger version updates on code changes.
+      DEPLOYMENT_HASH = local.source_hash,
     },
     var.enable_memory ? {
       ENABLE_MEMORY       = "true",
